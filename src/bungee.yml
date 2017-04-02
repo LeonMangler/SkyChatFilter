@@ -1,0 +1,6 @@
+name: SkyChatFilter
+main: de.myzelyam.skychatfilter.SkyChatFilter
+version: 1.0.0
+author: MyzelYam
+description: Filters chat and messages from swearing, caps and advertising
+depend: [SkyMessage]
