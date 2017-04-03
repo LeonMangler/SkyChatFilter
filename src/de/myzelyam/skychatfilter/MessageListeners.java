@@ -20,15 +20,19 @@ public class MessageListeners implements Listener {
         ProxiedPlayer player = (ProxiedPlayer) e.getSender();
         String message = e.getMessage();
         if (e.isCommand()) return;
-        if (!plugin.allowChatMessage(player, message))
-            e.setCancelled(true);
+        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, true);
+        plugin.getProxy().getPluginManager().callEvent(event);
+        e.setMessage(event.getText());
+        if (event.isCancelled()) e.setCancelled(true);
     }
 
     @EventHandler
-    public void onPublicMessageSend(PrivateMessageEvent e) {
+    public void onPrivateMessageSend(PrivateMessageEvent e) {
         ProxiedPlayer player = e.getSender();
         String message = e.getMessage();
-        if (!plugin.allowChatMessage(player, message))
-            e.setCancelled(true);
+        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, false);
+        plugin.getProxy().getPluginManager().callEvent(event);
+        e.setMessage(event.getText());
+        if (event.isCancelled()) e.setCancelled(true);
     }
 }
