@@ -8,7 +8,7 @@ import net.md_5.bungee.event.EventPriority;
 
 public class CapsFilter implements Listener {
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onMessage(GeneralMessageSendEvent e) {
         String text = e.getText();
         int amountOfUppercase = 0;

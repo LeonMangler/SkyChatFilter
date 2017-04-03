@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="bungee-latest" level="application" />
     <orderEntry type="library" name="SkyMessage" level="project" />
+    <orderEntry type="library" name="MrCore-latest" level="application" />
   </component>
 </module>
