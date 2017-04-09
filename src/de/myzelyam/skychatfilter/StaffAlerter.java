@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class StaffAlerter extends Command implements Runnable {
 
-    private static final List<String> alreadyHandledMessages = new ArrayList<>();
+    private final List<String> alreadyHandledMessages = new ArrayList<>();
     private final SkyChatFilter plugin;
     private final Map<Integer, MessageAction> keyMessageMap = new ConcurrentHashMap<>();
     private final String configCategory;
@@ -37,6 +37,10 @@ public abstract class StaffAlerter extends Command implements Runnable {
 
     public String getConfigCategory() {
         return configCategory;
+    }
+
+    public SkyChatFilter getPlugin() {
+        return plugin;
     }
 
     public void alert(ProxiedPlayer sender, String text) {
@@ -88,7 +92,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
 
     private int constructNewMessageAction(String action, String message, ProxiedPlayer sender) {
         int key = nextKey++;
-        MessageAction messageAction = new MessageAction(action, message, sender, plugin);
+        MessageAction messageAction = new MessageAction(action, message, sender, this);
         keyMessageMap.put(key, messageAction);
         return key;
     }
@@ -97,32 +101,34 @@ public abstract class StaffAlerter extends Command implements Runnable {
     public void run() {
         ImmutableMap.copyOf(keyMessageMap).forEach((key, action) -> {
             if (action.readyForCleanup()) {
+                alreadyHandledMessages.remove(action.message);
                 keyMessageMap.remove(key);
             }
         });
     }
 
     private static class MessageAction {
-        private final SkyChatFilter plugin;
+        private final StaffAlerter alerter;
         private final String message;
         private final ProxiedPlayer sender;
         private final String action;
         private final long creationTime;
 
-        MessageAction(String action, String message, ProxiedPlayer sender, SkyChatFilter plugin) {
+        MessageAction(String action, String message, ProxiedPlayer sender, StaffAlerter alerter) {
             this.message = message;
             this.sender = sender;
-            this.plugin = plugin;
+            this.alerter = alerter;
             this.action = action;
             creationTime = System.currentTimeMillis();
         }
 
         void performAction(ProxiedPlayer player) {
-            if (alreadyHandledMessages.contains(message)) {
-                sender.sendMessage(plugin.getMessage("ActionAlreadyPerformed", sender.getServer().getInfo()));
+            if (alerter.alreadyHandledMessages.contains(message)) {
+                sender.sendMessage(alerter.getPlugin().getMessage("ActionAlreadyPerformed", sender.getServer()
+                        .getInfo()));
                 return;
             }
-            alreadyHandledMessages.add(message);
+            alerter.alreadyHandledMessages.add(message);
             if (action.equalsIgnoreCase("<allow>")) {
                 resend();
             } else {
@@ -135,13 +141,13 @@ public abstract class StaffAlerter extends Command implements Runnable {
         }
 
         private void execCmd(ProxiedPlayer player) {
-            plugin.getProxy().getPluginManager().dispatchCommand(player, action);
+            alerter.getPlugin().getProxy().getPluginManager().dispatchCommand(player, action);
         }
 
         private void resend() {
-            plugin.getMessageListeners().getExemptions().add(sender);
+            alerter.getPlugin().getMessageListeners().getExemptions().add(sender);
             sender.chat(message);
-            plugin.getMessageListeners().getExemptions().remove(sender);
+            alerter.getPlugin().getMessageListeners().getExemptions().remove(sender);
         }
     }
 }
