@@ -21,6 +21,6 @@ public class AntiSwear implements Listener {
         String text = e.getText();
         ProxiedPlayer p = e.getSender();
         if (p.hasPermission("skychatfilter.bypassswear") || e.isCancelled()) return;
-
+        
     }
 }

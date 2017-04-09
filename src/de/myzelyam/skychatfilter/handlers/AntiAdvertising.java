@@ -2,6 +2,7 @@ package de.myzelyam.skychatfilter.handlers;
 
 import de.myzelyam.skychatfilter.GeneralMessageSendEvent;
 import de.myzelyam.skychatfilter.SkyChatFilter;
+import de.myzelyam.skychatfilter.StaffAlerter;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
@@ -11,12 +12,18 @@ import net.md_5.bungee.event.EventPriority;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AntiAdvertising implements Listener {
+public class AntiAdvertising extends StaffAlerter implements Listener {
 
     private final SkyChatFilter plugin;
 
     public AntiAdvertising(SkyChatFilter plugin) {
+        super(plugin);
         this.plugin = plugin;
+    }
+
+    @Override
+    public String getConfigCategory() {
+        return "AdStaffAlerter";
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -41,6 +48,7 @@ public class AntiAdvertising implements Listener {
                     // whitelist doesnt prevent it from being blacklisted => illegal
                     e.setCancelled(true);
                     p.sendMessage(plugin.getMessage("NoAdvertising", p.getServer().getInfo()));
+                    alert(p, text);
                     return;
                 }
             }

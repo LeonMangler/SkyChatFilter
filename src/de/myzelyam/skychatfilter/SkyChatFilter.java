@@ -2,6 +2,7 @@ package de.myzelyam.skychatfilter;
 
 import de.myzelyam.skychatfilter.handlers.AntiAdvertising;
 import de.myzelyam.skychatfilter.handlers.AntiSpam;
+import de.myzelyam.skychatfilter.handlers.AntiSwear;
 import de.myzelyam.skychatfilter.handlers.CapsFilter;
 
 import eu.mrgames.mrcore.io.flatfile.FileManager;
@@ -18,13 +19,14 @@ import net.md_5.bungee.config.Configuration;
 public class SkyChatFilter extends Plugin {
 
     private Configuration config;
+    private MessageListeners messageListners;
 
     @Override
     public void onEnable() {
         PluginFile<Configuration> configFile = MrCorePlugin.get().getService(FileManager.class)
                 .addBungeeFile("config", FileManager.FileType.CONFIG, this);
         config = configFile.getConfig();
-        getProxy().getPluginManager().registerListener(this, new MessageListeners(this));
+        getProxy().getPluginManager().registerListener(this, messageListners = new MessageListeners(this));
 
         // reload cmd
         getProxy().getPluginManager().registerCommand(this, new Command("skychatfilter",
@@ -32,6 +34,7 @@ public class SkyChatFilter extends Plugin {
             @Override
             public void execute(CommandSender sender, String[] args) {
                 configFile.reload();
+                config = configFile.getConfig();
                 sender.sendMessage(ChatColor.GREEN + "Reloaded config successfully");
             }
         });
@@ -40,6 +43,7 @@ public class SkyChatFilter extends Plugin {
         getProxy().getPluginManager().registerListener(this, new CapsFilter());
         getProxy().getPluginManager().registerListener(this, new AntiSpam(this));
         getProxy().getPluginManager().registerListener(this, new AntiAdvertising(this));
+        getProxy().getPluginManager().registerListener(this, new AntiSwear(this));
     }
 
     public Configuration getConfig() {
@@ -47,14 +51,18 @@ public class SkyChatFilter extends Plugin {
     }
 
     public String getMessage(String path, ServerInfo server, String... args) {
-        String lang = server == null ? null : config.getString("Language.Servers." + server.getName());
-        if (lang == null) lang = config.getString("Language.Servers.Default");
+        String lang = server == null ? "" : config.getString("Language.Servers." + server.getName());
+        if (lang.equals("")) lang = config.getString("Language.Servers.Default");
         String configValue = config.getString("Language." + lang + "." + path);
-        if (configValue == null) return ChatColor.RED + "Error: Message not found: " + path;
+        if (configValue.equals("")) return ChatColor.RED + "Error: Message not found: " + path;
         String message = ChatColor.translateAlternateColorCodes('&', configValue);
         for (int i = 0; i < args.length; i++) {
             message = message.replace("{" + i + "}", args[i]);
         }
         return message;
+    }
+
+    public MessageListeners getMessageListners() {
+        return messageListners;
     }
 }

@@ -6,10 +6,12 @@ Language:
     AntiSpamTriggered: "&cDu kannst nicht so viele Nachrichten in so kurzer Zeit senden!"
     TextTooSimilar: "&cDu kannst nicht dieselbe Nachricht nochmal senden!"
     NoAdvertising: "&cEs ist dir nicht erlaubt andere Server oder Webseiten zu erwähnen!"
+    ActionAlreadyPerformed: "&cEs wurde für diese Nachricht bereits eine Aktion ausgeführt!"
   English:
     AntiSpamTriggered: "&cYou cannot send that many messages in such a short time!"
     TextTooSimilar: "&cYou cannot send the same message twice!"
     NoAdvertising: "&cYou are not allowed to mention other servers or websites!"
+    ActionAlreadyPerformed: "&cAn action for this message has already been performed!"
   Servers:
     Default: German
     SkyBlockUS: English
@@ -30,8 +32,18 @@ SameMessageSaveAmount: 5
 BlacklistRegEx:
 - "(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}( ?\. ?| ?\(?dot\)? ?)[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
 - "(?:[0-9]{1,3}( ?\. ?|\(?dot\)?)){3}[0-9]{1,3}"
-- "skyparty|hypixel|gommehd|skycave"
+- "skyparty|hypixel|gomme|skycave"
 - "([^\w\d]|_|dot|punkt)(eu|net|com|org|tk|ch|at|ca|io|de|ck|au|ru|cn\.in|co\.uk|co\.jp|fr|com\.br)((?!\S)|\/|:)"
 - "([^\w\d ]|_|dot|punkt|\.[^\w\d])(me|us|gg|co)((?!\S)|\/|:)"
 OverridingWhitelistRegEx:
 - "mrgames\.eu|mrsgames\.eu|mrvote\.eu|mrmc\.eu|google\..+"
+AdStaffAlerter:
+  AlertMessage: "&7[Werbung] &c{0}: {1} &3"
+  Punishments:
+  "[WerbBanP]": "ban {0} Werbung"
+  "[WerbMute1h]": "mute {0} 1h Werbung"
+  "[UnerwBanP]": "ban {0} Unerwünschter Spieler"
+  "[OK]": "<allow>"
+
+
+# AntiSwear
