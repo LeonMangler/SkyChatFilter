@@ -17,13 +17,8 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
     private final SkyChatFilter plugin;
 
     public AntiAdvertising(SkyChatFilter plugin) {
-        super(plugin);
+        super(plugin, "AdStaffAlerter");
         this.plugin = plugin;
-    }
-
-    @Override
-    public String getConfigCategory() {
-        return "AdStaffAlerter";
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -31,8 +26,10 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
         ProxiedPlayer p = e.getSender();
         if (p.hasPermission("skychatfilter.bypassad") || e.isCancelled()) return;
         String text = e.getText();
+        String textOrig = text;
         for (String regex : plugin.getConfig().getStringList("BlacklistRegEx")) {
             Matcher matcher = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text);
+
             if (matcher.find()) {
                 // remove whitelisted content and see if its still blacklisted
                 for (String regex2 : plugin.getConfig().getStringList("OverridingWhitelistRegEx")) {
@@ -48,7 +45,7 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
                     // whitelist doesnt prevent it from being blacklisted => illegal
                     e.setCancelled(true);
                     p.sendMessage(plugin.getMessage("NoAdvertising", p.getServer().getInfo()));
-                    alert(p, text);
+                    alert(p, textOrig);
                     return;
                 }
             }

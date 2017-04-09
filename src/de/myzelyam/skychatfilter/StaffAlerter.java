@@ -12,6 +12,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,22 +21,27 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class StaffAlerter extends Command implements Runnable {
 
+    private static final List<String> alreadyHandledMessages = new ArrayList<>();
     private final SkyChatFilter plugin;
-
     private final Map<Integer, MessageAction> keyMessageMap = new ConcurrentHashMap<>();
-
+    private final String configCategory;
     private int nextKey = ThreadLocalRandom.current().nextInt(100000);
 
-    public StaffAlerter(SkyChatFilter plugin) {
-        super("skychatfilter-allowid", "skychatfilter.receivealert");
+    public StaffAlerter(SkyChatFilter plugin, String configCategory) {
+        super("skychatfilter-" + configCategory.toLowerCase() + "-allowid", "skychatfilter.receivealert");
         this.plugin = plugin;
+        this.configCategory = configCategory;
         plugin.getProxy().getScheduler().schedule(plugin, this, 30, 30, TimeUnit.MINUTES);
+        plugin.getProxy().getPluginManager().registerCommand(plugin, this);
     }
 
-    public abstract String getConfigCategory();
+    public String getConfigCategory() {
+        return configCategory;
+    }
 
     public void alert(ProxiedPlayer sender, String text) {
         if (!plugin.getConfig().getString(getConfigCategory() + ".AlertMessage").equals("")) {
+            if (alreadyHandledMessages.contains(text)) alreadyHandledMessages.remove(text);
             for (ProxiedPlayer staff : plugin.getProxy().getPlayers()) {
                 if (!staff.hasPermission("skychatfilter.receivealert")) continue;
                 String pre = ChatColor.translateAlternateColorCodes('&', plugin.getConfig()
@@ -46,15 +53,21 @@ public abstract class StaffAlerter extends Command implements Runnable {
                         .getKeys()) {
                     String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
                             punishment);
-                    ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + action);
+                    action = action.replace("{0}", sender.getName());
+                    int key = constructNewMessageAction(action, text, sender);
+                    ClickEvent clickEvent =
+                            new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                    "/skychatfilter-" + getConfigCategory().toLowerCase()
+                                            + "-allowid " + key);
                     HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            new ComponentBuilder(action.equals("<allow>") ? "Nachricht erlauben" : action)
-                                    .color(ChatColor.AQUA).create());
-                    punishments.append(punishment).color(ChatColor.RED).bold(true)
-                            .event(clickEvent).event(hoverEvent).append(" ");
+                            new ComponentBuilder(action.equals("<allow>") ? "Nachricht erlauben"
+                                    : "/" + action).color(ChatColor.AQUA).create());
+                    punishments.append(punishment).color(action.equals("<allow>") ? ChatColor.GREEN
+                            : ChatColor.GOLD).event(clickEvent).event(hoverEvent).append(" ");
                 }
-                for (BaseComponent comp : punishments.create())
+                for (BaseComponent comp : punishments.create()) {
                     component.addExtra(comp);
+                }
                 staff.sendMessage(component);
             }
         }
@@ -70,11 +83,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
             return;
         }
         if (!keyMessageMap.containsKey(key)) return;
-        boolean success = keyMessageMap.get(key).performAction((ProxiedPlayer) sender);
-        if (!success) {
-            sender.sendMessage(plugin.getMessage("ActionAlreadyPerformed", ((ProxiedPlayer) sender)
-                    .getServer().getInfo()));
-        }
+        keyMessageMap.get(key).performAction((ProxiedPlayer) sender);
     }
 
     private int constructNewMessageAction(String action, String message, ProxiedPlayer sender) {
@@ -99,7 +108,6 @@ public abstract class StaffAlerter extends Command implements Runnable {
         private final ProxiedPlayer sender;
         private final String action;
         private final long creationTime;
-        private boolean alreadyDone = false;
 
         MessageAction(String action, String message, ProxiedPlayer sender, SkyChatFilter plugin) {
             this.message = message;
@@ -109,15 +117,17 @@ public abstract class StaffAlerter extends Command implements Runnable {
             creationTime = System.currentTimeMillis();
         }
 
-        boolean performAction(ProxiedPlayer player) {
-            if (alreadyDone) return false;
+        void performAction(ProxiedPlayer player) {
+            if (alreadyHandledMessages.contains(message)) {
+                sender.sendMessage(plugin.getMessage("ActionAlreadyPerformed", sender.getServer().getInfo()));
+                return;
+            }
+            alreadyHandledMessages.add(message);
             if (action.equalsIgnoreCase("<allow>")) {
                 resend();
             } else {
                 execCmd(player);
             }
-            alreadyDone = true;
-            return true;
         }
 
         boolean readyForCleanup() {
@@ -125,13 +135,13 @@ public abstract class StaffAlerter extends Command implements Runnable {
         }
 
         private void execCmd(ProxiedPlayer player) {
-            player.chat("/" + action);
+            plugin.getProxy().getPluginManager().dispatchCommand(player, action);
         }
 
         private void resend() {
-            plugin.getMessageListners().getExemptions().add(sender);
+            plugin.getMessageListeners().getExemptions().add(sender);
             sender.chat(message);
-            plugin.getMessageListners().getExemptions().remove(sender);
+            plugin.getMessageListeners().getExemptions().remove(sender);
         }
     }
 }

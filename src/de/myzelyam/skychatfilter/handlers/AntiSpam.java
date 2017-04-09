@@ -28,7 +28,7 @@ public class AntiSpam implements Listener, Runnable {
 
     public AntiSpam(SkyChatFilter plugin) {
         this.plugin = plugin;
-        plugin.getProxy().getScheduler().schedule(plugin, this,
+        plugin.getProxy().getScheduler().schedule(plugin, this, 0,
                 plugin.getConfig().getInt("FloodClearPeriodInSeconds"), TimeUnit.SECONDS);
     }
 
@@ -43,13 +43,19 @@ public class AntiSpam implements Listener, Runnable {
                 > TimeUnit.SECONDS.toMillis(plugin.getConfig().getInt("FloodTimeUntilNoMoreJoinInSeconds")))
                 ? plugin.getConfig().getInt("FloodMaxMessagesPerPeriodWithoutJoin")
                 : plugin.getConfig().getInt("FloodMaxMessagesPerPeriodAfterJoin");
+        if (!playerMessagesSentMap.containsKey(p.getUniqueId())) {
+            playerMessagesSentMap.put(p.getUniqueId(), 0);
+        }
         playerMessagesSentMap.put(p.getUniqueId(), playerMessagesSentMap.get(p.getUniqueId()) + 1);
-        if (playerMessagesSentMap.get(p.getUniqueId()) >=
+        if (playerMessagesSentMap.get(p.getUniqueId()) >
                 (allowedMax + plugin.getConfig().getInt("FloodKickAfterXOverMax"))) {
             p.disconnect(plugin.getMessage("AntiSpamTriggered", p.getServer().getInfo()));
             return;
         }
-        if (playerMessagesSentMap.get(p.getUniqueId()) >= allowedMax) {
+        if (!playerLastMessagesMap.containsKey(p.getUniqueId())) {
+            playerLastMessagesMap.put(p.getUniqueId(), new LinkedList<>());
+        }
+        if (playerMessagesSentMap.get(p.getUniqueId()) > allowedMax) {
             e.setCancelled(true);
             p.sendMessage(plugin.getMessage("AntiSpamTriggered", p.getServer().getInfo()));
             return;
@@ -62,9 +68,6 @@ public class AntiSpam implements Listener, Runnable {
             }
         }
 
-        if (!playerLastMessagesMap.containsKey(p.getUniqueId())) {
-            playerLastMessagesMap.put(p.getUniqueId(), new LinkedList<>());
-        }
         LinkedList<Message> lastMessages = playerLastMessagesMap.get(p.getUniqueId());
         lastMessages.add(new Message(text));
         if (lastMessages.size() > plugin.getConfig().getInt("SameMessageSaveAmount"))
