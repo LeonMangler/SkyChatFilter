@@ -20,6 +20,7 @@ public class SkyChatFilter extends Plugin {
 
     private Configuration config;
     private MessageListeners messageListeners;
+    private AntiSwear antiSwear;
 
     @Override
     public void onEnable() {
@@ -35,6 +36,7 @@ public class SkyChatFilter extends Plugin {
             public void execute(CommandSender sender, String[] args) {
                 configFile.reload();
                 config = configFile.getConfig();
+                antiSwear.loadWordsFromFile();
                 sender.sendMessage(ChatColor.GREEN + "Reloaded config successfully");
             }
         });
@@ -43,7 +45,7 @@ public class SkyChatFilter extends Plugin {
         getProxy().getPluginManager().registerListener(this, new CapsFilter());
         getProxy().getPluginManager().registerListener(this, new AntiSpam(this));
         getProxy().getPluginManager().registerListener(this, new AntiAdvertising(this));
-        getProxy().getPluginManager().registerListener(this, new AntiSwear(this));
+        getProxy().getPluginManager().registerListener(this, antiSwear = new AntiSwear(this));
     }
 
     public Configuration getConfig() {

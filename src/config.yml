@@ -7,11 +7,13 @@ Language:
     TextTooSimilar: "&cDu kannst nicht dieselbe Nachricht nochmal senden!"
     NoAdvertising: "&cEs ist dir nicht erlaubt andere Server oder Webseiten zu erwähnen!"
     ActionAlreadyPerformed: "&cEs wurde für diese Nachricht bereits eine Aktion ausgeführt!"
+    NoSwearing: "&cDie Benutzung von Schimpfwörtern sowie die Umgehung des Filters ist verboten!"
   English:
     AntiSpamTriggered: "&cYou cannot send that many messages in such a short time!"
     TextTooSimilar: "&cYou cannot send the same message twice!"
     NoAdvertising: "&cYou are not allowed to mention other servers or websites!"
     ActionAlreadyPerformed: "&cAn action for this message has already been performed!"
+    NoSwearing: "&cSwearing and circumventing the filter is prohibited!"
   Servers:
     Default: German
     SkyBlockUS: English
@@ -44,5 +46,3 @@ AdStaffAlerter:
     "[WerbMute1h]": "mute {0} 1h Werbung"
     "[UnerwBanP]": "ban {0} Unerwünschter Spieler"
     "[OK]": "<allow>"
-
-# AntiSwear
