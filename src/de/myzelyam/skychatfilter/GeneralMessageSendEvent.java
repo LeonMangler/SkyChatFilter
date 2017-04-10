@@ -8,17 +8,27 @@ public class GeneralMessageSendEvent extends Event implements Cancellable {
 
     private final ProxiedPlayer sender;
     private final boolean isPublic;
+    private final ProxiedPlayer receiver;
     private String text;
     private boolean cancelled = false;
 
-    public GeneralMessageSendEvent(ProxiedPlayer sender, String text, boolean isPublic) {
+    public GeneralMessageSendEvent(ProxiedPlayer sender, String text,
+                                   boolean isPublic, ProxiedPlayer receiver) {
         this.sender = sender;
         this.text = text;
         this.isPublic = isPublic;
+        this.receiver = receiver;
     }
 
     public ProxiedPlayer getSender() {
         return sender;
+    }
+
+    /**
+     * @return the receiver of the /msg or null if this is no /msg
+     */
+    public ProxiedPlayer getOptionalReceiver() {
+        return receiver;
     }
 
     public String getText() {

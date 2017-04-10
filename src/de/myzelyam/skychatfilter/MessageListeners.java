@@ -27,7 +27,7 @@ public class MessageListeners implements Listener {
         String message = e.getMessage();
         if (e.isCommand()) return;
         if (exemptions.contains(player)) return;
-        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, true);
+        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, true, null);
         plugin.getProxy().getPluginManager().callEvent(event);
         e.setMessage(event.getText());
         if (event.isCancelled()) e.setCancelled(true);
@@ -38,7 +38,7 @@ public class MessageListeners implements Listener {
         ProxiedPlayer player = e.getSender();
         String message = e.getMessage();
         if (exemptions.contains(player)) return;
-        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, false);
+        GeneralMessageSendEvent event = new GeneralMessageSendEvent(player, message, false, e.getReceiver());
         plugin.getProxy().getPluginManager().callEvent(event);
         e.setMessage(event.getText());
         if (event.isCancelled()) e.setCancelled(true);

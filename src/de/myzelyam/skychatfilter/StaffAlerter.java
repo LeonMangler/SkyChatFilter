@@ -43,7 +43,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
         return plugin;
     }
 
-    public void alert(ProxiedPlayer sender, String text) {
+    public void alert(ProxiedPlayer sender, String text, boolean isPublic, ProxiedPlayer optionalReceiver) {
         if (!plugin.getConfig().getString(getConfigCategory() + ".AlertMessage").equals("")) {
             if (alreadyHandledMessages.contains(text)) alreadyHandledMessages.remove(text);
             for (ProxiedPlayer staff : plugin.getProxy().getPlayers()) {
@@ -58,7 +58,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
                     String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
                             punishment);
                     action = action.replace("{0}", sender.getName());
-                    int key = constructNewMessageAction(action, text, sender);
+                    int key = constructNewMessageAction(action, text, sender, isPublic, optionalReceiver);
                     ClickEvent clickEvent =
                             new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                     "/skychatfilter-" + getConfigCategory().toLowerCase()
@@ -79,20 +79,29 @@ public abstract class StaffAlerter extends Command implements Runnable {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if (args.length != 1 || !(sender instanceof ProxiedPlayer)) return;
+        if (args.length != 1 || !(sender instanceof ProxiedPlayer)) {
+            sender.sendMessage(ChatColor.RED + "Wrong args or no player");
+            return;
+        }
         int key;
         try {
             key = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
+            sender.sendMessage(ChatColor.RED + args[0] + " is not a number");
             return;
         }
-        if (!keyMessageMap.containsKey(key)) return;
+        if (!keyMessageMap.containsKey(key)) {
+            sender.sendMessage(ChatColor.RED + "Action timed out or never existed");
+            return;
+        }
         keyMessageMap.get(key).performAction((ProxiedPlayer) sender);
     }
 
-    private int constructNewMessageAction(String action, String message, ProxiedPlayer sender) {
+    private int constructNewMessageAction(String action, String message, ProxiedPlayer sender,
+                                          boolean isPublic, ProxiedPlayer optionalReceiver) {
         int key = nextKey++;
-        MessageAction messageAction = new MessageAction(action, message, sender, this);
+        MessageAction messageAction = new MessageAction(action, message, sender, this,
+                isPublic, optionalReceiver);
         keyMessageMap.put(key, messageAction);
         return key;
     }
@@ -113,19 +122,24 @@ public abstract class StaffAlerter extends Command implements Runnable {
         private final ProxiedPlayer sender;
         private final String action;
         private final long creationTime;
+        private final boolean isPublic;
+        private final ProxiedPlayer optionalReceiver;
 
-        MessageAction(String action, String message, ProxiedPlayer sender, StaffAlerter alerter) {
+        MessageAction(String action, String message, ProxiedPlayer sender,
+                      StaffAlerter alerter, boolean isPublic, ProxiedPlayer optionalReceiver) {
             this.message = message;
             this.sender = sender;
             this.alerter = alerter;
             this.action = action;
+            this.isPublic = isPublic;
+            this.optionalReceiver = optionalReceiver;
             creationTime = System.currentTimeMillis();
         }
 
         void performAction(ProxiedPlayer player) {
             if (alerter.alreadyHandledMessages.contains(message)) {
-                sender.sendMessage(alerter.getPlugin().getMessage("ActionAlreadyPerformed", sender.getServer()
-                        .getInfo()));
+                player.sendMessage(alerter.getPlugin().getMessage("ActionAlreadyPerformed", player
+                        .getServer().getInfo()));
                 return;
             }
             alerter.alreadyHandledMessages.add(message);
@@ -146,7 +160,12 @@ public abstract class StaffAlerter extends Command implements Runnable {
 
         private void resend() {
             alerter.getPlugin().getMessageListeners().getExemptions().add(sender);
-            sender.chat(message);
+            if (isPublic)
+                sender.chat(message);
+            else if (optionalReceiver != null) {
+                alerter.getPlugin().getProxy().getPluginManager().dispatchCommand(sender,
+                        "msg " + optionalReceiver.getName() + " " + message);
+            }
             alerter.getPlugin().getMessageListeners().getExemptions().remove(sender);
         }
     }

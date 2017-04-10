@@ -32,11 +32,11 @@ SameMessageSaveAmount: 5
 
 # AntiAdvertising
 BlacklistRegEx:
-- '(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}( ?\. ?| ?\(?dot\)? ?)[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
+- '(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}(\.| ?\(?dot\)? ?| ?\(?punkt\)? ?)[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
 - '(?:[0-9]{1,3}( ?\. ?|\(?dot\)?)){3}[0-9]{1,3}'
-- 'skyparty|hypixel|gomme|skycave'
-- '([^\w\d]|_|dot|punkt)(eu|net|com|org|tk|ch|at|ca|io|de|ck|au|ru|cn\.in|co\.uk|co\.jp|fr|com\.br)((?!\S)|\/|:)'
-- '([^\w\d ]|_|dot|punkt|\.[^\w\d])(me|us|gg|co)((?!\S)|\/|:)'
+- 'skyparty|hypixel|gomme|skycave|hivemc'
+- '(mc|play|http:\/|https:\/)(\/www)?[\W_]{1,3}(\w){3,20}[\W_]{1,3}(net|com|de|eu|us|org|me|ch|cc|co.uk|uk)'
+- '([^\w\d\u00e4\u00f6\u00fc\u00df ]|_|dot|punkt)( )?(cc|net\.br|me|us|gg|co|at|de|eu|net|nl|se|com|org|jp|tk|ch|ca|io|xyz|uk|ck|au|ru|cn\.in|co\.uk|co\.jp|fr|com\.br|be)((?!\S)|\/|:)'
 OverridingWhitelistRegEx:
 - 'mrgames\.eu|mrsgames\.eu|mrvote\.eu|mrmc\.eu|google\..+'
 AdStaffAlerter:
