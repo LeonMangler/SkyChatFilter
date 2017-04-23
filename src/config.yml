@@ -19,6 +19,25 @@ Language:
     SkyBlockUS: English
     LobbyUS: English
 
+# included commands (SkyMessage commands are already included)
+IncludedCommands:
+- ch
+- herochat
+- global
+- g
+- h
+- handel
+- s
+- support
+- p
+- premium
+- me
+- eme
+- action
+- eaction
+- describe
+- edescribe
+
 # AntiSpam
 FloodClearPeriodInSeconds: 4
 FloodMaxMessagesPerPeriodAfterJoin: 3

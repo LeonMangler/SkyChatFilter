@@ -43,7 +43,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
         return plugin;
     }
 
-    public void alert(ProxiedPlayer sender, String text, boolean isPublic, ProxiedPlayer optionalReceiver) {
+    public void alert(ProxiedPlayer sender, String text, ProxiedPlayer optionalReceiver) {
         if (!plugin.getConfig().getString(getConfigCategory() + ".AlertMessage").equals("")) {
             if (alreadyHandledMessages.contains(text)) alreadyHandledMessages.remove(text);
             for (ProxiedPlayer staff : plugin.getProxy().getPlayers()) {
@@ -60,7 +60,7 @@ public abstract class StaffAlerter extends Command implements Runnable {
                     String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
                             punishment);
                     action = action.replace("{0}", sender.getName());
-                    int key = constructNewMessageAction(action, text, sender, isPublic, optionalReceiver);
+                    int key = constructNewMessageAction(action, text, sender);
                     ClickEvent clickEvent =
                             new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                     "/skychatfilter-" + getConfigCategory().toLowerCase()
@@ -99,11 +99,9 @@ public abstract class StaffAlerter extends Command implements Runnable {
         keyMessageMap.get(key).performAction((ProxiedPlayer) sender);
     }
 
-    private int constructNewMessageAction(String action, String message, ProxiedPlayer sender,
-                                          boolean isPublic, ProxiedPlayer optionalReceiver) {
+    private int constructNewMessageAction(String action, String message, ProxiedPlayer sender) {
         int key = nextKey++;
-        MessageAction messageAction = new MessageAction(action, message, sender, this,
-                isPublic, optionalReceiver);
+        MessageAction messageAction = new MessageAction(action, message, sender, this);
         keyMessageMap.put(key, messageAction);
         return key;
     }
@@ -124,17 +122,12 @@ public abstract class StaffAlerter extends Command implements Runnable {
         private final ProxiedPlayer sender;
         private final String action;
         private final long creationTime;
-        private final boolean isPublic;
-        private final ProxiedPlayer optionalReceiver;
 
-        MessageAction(String action, String message, ProxiedPlayer sender,
-                      StaffAlerter alerter, boolean isPublic, ProxiedPlayer optionalReceiver) {
+        MessageAction(String action, String message, ProxiedPlayer sender, StaffAlerter alerter) {
             this.message = message;
             this.sender = sender;
             this.alerter = alerter;
             this.action = action;
-            this.isPublic = isPublic;
-            this.optionalReceiver = optionalReceiver;
             creationTime = System.currentTimeMillis();
         }
 
@@ -161,17 +154,16 @@ public abstract class StaffAlerter extends Command implements Runnable {
         }
 
         private void resend() {
-            alerter.getPlugin().getMessageListeners().getExemptions().add(sender);
-            if (isPublic) {
+            alerter.getPlugin().getMessageListener().getExemptions().add(sender);
+            if (!message.startsWith("/")) {
                 sender.chat(message);
-                alerter.getPlugin().getMessageListeners().getExemptions().remove(sender);
-            } else if (optionalReceiver != null) {
+                alerter.getPlugin().getMessageListener().getExemptions().remove(sender);
+            } else {
                 try {
-                    alerter.getPlugin().getProxy().getPluginManager().dispatchCommand(sender,
-                            "msg " + optionalReceiver.getName() + " " + message);
+                    alerter.getPlugin().getProxy().getPluginManager().dispatchCommand(sender, message);
                 } finally {
                     alerter.getPlugin().getProxy().getScheduler().schedule(alerter.getPlugin(), () ->
-                                    alerter.getPlugin().getMessageListeners().getExemptions().remove(sender),
+                                    alerter.getPlugin().getMessageListener().getExemptions().remove(sender),
                             1, TimeUnit.SECONDS);
                 }
             }

@@ -19,7 +19,7 @@ import net.md_5.bungee.config.Configuration;
 public class SkyChatFilter extends Plugin {
 
     private Configuration config;
-    private MessageListeners messageListeners;
+    private MessageListener messageListener;
     private AntiSwear antiSwear;
 
     @Override
@@ -27,7 +27,7 @@ public class SkyChatFilter extends Plugin {
         PluginFile<Configuration> configFile = MrCorePlugin.get().getService(FileManager.class)
                 .addBungeeFile("config", FileManager.FileType.CONFIG, this);
         config = configFile.getConfig();
-        getProxy().getPluginManager().registerListener(this, messageListeners = new MessageListeners(this));
+        getProxy().getPluginManager().registerListener(this, messageListener = new MessageListener(this));
 
         // reload cmd
         getProxy().getPluginManager().registerCommand(this, new Command("skychatfilter",
@@ -64,7 +64,7 @@ public class SkyChatFilter extends Plugin {
         return message;
     }
 
-    public MessageListeners getMessageListeners() {
-        return messageListeners;
+    public MessageListener getMessageListener() {
+        return messageListener;
     }
 }

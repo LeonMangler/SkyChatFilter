@@ -6,17 +6,19 @@ import net.md_5.bungee.api.plugin.Event;
 
 public class GeneralMessageSendEvent extends Event implements Cancellable {
 
-    private final ProxiedPlayer sender;
-    private final boolean isPublic;
-    private final ProxiedPlayer receiver;
+    private final ProxiedPlayer sender, receiver;
     private String text;
     private boolean cancelled = false;
 
-    public GeneralMessageSendEvent(ProxiedPlayer sender, String text,
-                                   boolean isPublic, ProxiedPlayer receiver) {
+    public GeneralMessageSendEvent(ProxiedPlayer sender, String text) {
         this.sender = sender;
         this.text = text;
-        this.isPublic = isPublic;
+        this.receiver = null;
+    }
+
+    public GeneralMessageSendEvent(ProxiedPlayer sender, String message, ProxiedPlayer receiver) {
+        this.sender = sender;
+        this.text = message;
         this.receiver = receiver;
     }
 
@@ -25,10 +27,14 @@ public class GeneralMessageSendEvent extends Event implements Cancellable {
     }
 
     /**
-     * @return the receiver of the /msg or null if this is no /msg
+     * @return the receiver of the personal message or null if this is no pm
      */
-    public ProxiedPlayer getOptionalReceiver() {
+    public ProxiedPlayer getReceiver() {
         return receiver;
+    }
+
+    public boolean isCommand() {
+        return text.startsWith("/");
     }
 
     public String getText() {
@@ -37,10 +43,6 @@ public class GeneralMessageSendEvent extends Event implements Cancellable {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public boolean isPublic() {
-        return isPublic;
     }
 
     @Override

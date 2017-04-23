@@ -45,7 +45,7 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
                     // whitelist doesnt prevent it from being blacklisted => illegal
                     e.setCancelled(true);
                     p.sendMessage(plugin.getMessage("NoAdvertising", p.getServer().getInfo()));
-                    alert(p, textOrig, e.isPublic(), e.getOptionalReceiver());
+                    alert(p, textOrig, e.getReceiver());
                     return;
                 }
             }
