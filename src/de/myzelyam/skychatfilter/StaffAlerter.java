@@ -60,7 +60,8 @@ public abstract class StaffAlerter extends Command implements Runnable {
                     String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
                             punishment);
                     action = action.replace("{0}", sender.getName());
-                    int key = constructNewMessageAction(action, text, sender);
+                    int key = constructNewMessageAction(action, optionalReceiver == null ? text
+                            : ("/msg " + optionalReceiver.getName() + " " + text), sender);
                     ClickEvent clickEvent =
                             new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                     "/skychatfilter-" + getConfigCategory().toLowerCase()
