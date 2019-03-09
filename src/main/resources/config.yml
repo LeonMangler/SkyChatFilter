@@ -1,0 +1,122 @@
+# SkyChatFilter - Config
+
+# Commands that are filtered just like chat messages (Includes plugin:cmd syntax automatically)
+IncludedCommands:
+  - ch
+  - herochat
+  - global
+  - g
+  - me
+  - eme
+  - action
+  - eaction
+  - describe
+  - edescribe
+# You can disable features if you dont need them
+EnabledModules:
+  - AntiAdvertising
+  - AntiSpam/Flood
+  - AntiSpam/Repetition
+  - AntiSwear
+  - CapsFilter
+
+# Use '/skychatfilter reload' to reload the config files. Reload permission: skychatfilter.reload
+
+# ### AntiSpam settings ###
+
+# Flood detection. This makes sure that players dont send too many messages ('MaxMessagesPerPeriod') in a
+# short period of time ('ClearPeriod'). You can define a different maximum of chat messages ('AfterJoin')
+# for players that joined the server recently ('TimeUntilNoMoreJoin'). A player will be kicked from the
+# server if the applying 'MaxMessages' threshold has been exceeded severely ('KickAfterXOverMax').
+# Bypass permission: skychatfilter.bypassflood
+FloodMaxMessagesPerPeriodWithoutJoin: 6
+FloodClearPeriodInSeconds: 4
+FloodMaxMessagesPerPeriodAfterJoin: 3
+FloodTimeUntilNoMoreJoinInSeconds: 30
+FloodKickAfterXOverMax: 10
+
+# Repetition detection. This makes sure that players dont send the same messages or similar messages
+# ('Similarity'-rate between 0 (not similar) and 1 (very similar)) over and over again. Messages that are
+# short ('MinLength') are excepted from this detection. The last few chat messages ('SaveAmount') of a
+# player will be saved for this check and will trigger the repetition check if they were sent recently
+# ('ExpiryInSeconds'). Bypass permission: skychatfilter.bypassrepetition
+SameMessageSimilarity: 0.8
+SameMessageMinLength: 5
+SameMessageSaveAmount: 5
+SameMessageExpiryInSeconds: 30
+
+# ### AntiCaps settings ###
+
+# Chat messages that contain mostly ('CapsMinPercentage') uppercase letters can trigger AntiCaps if
+# they aren't short ('MinLength'). They will either be adjusted ('AdjustMessage') to only contain lowercase
+# characters (except first character) or blocked.
+# Bypass permission: skychatfilter.bypasscaps
+CapsMinPercentage: 0.5
+CapsMinLength: 4
+CapsAdjustMessage: true
+
+# ### AntiSwear info ###
+
+# The plugin will create a separate blacklist.txt file. You can put banned words/sentences into
+# this file (separated by newline)
+
+# ### AntiAdvertising settings ###
+
+# Chat messages that match any of the following regular expressions will trigger the filter.
+# You can use https://regexr.com/ to build, modify and test these expressions and make them suit your needs.
+# There are many tutorials for RegEx online and I recommend that you dont modify the pre-defined expressions
+# if you aren't proficient in RegEx. Bypass permission: skychatfilter.bypassad
+BlacklistRegEx:
+  # General URLs
+  - '(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}(\.| ?\(?dot\)? ?| ?\(?punkt\)? ?)[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
+  # IP Addresses
+  - '(?:[0-9]{1,3}( ?\. ?|\(?dot\)?)){3}[0-9]{1,3}'
+  # Suspicious Subdomain + TLD
+  - '(mc|play|http:\/|https:\/)(\/www)?[\W_]{1,3}(\w){3,20}[\W_]{1,3}(net|com|de|eu|us|org|me|ch|cc|co.uk|uk)'
+  # Suspicious DOT + TLD
+  - '([^\w\d\u00e4\u00f6\u00fc\u00df ]|_|dot|punkt)( )?(cc|net\.br|me|us|gg|co|at|de|eu|net|nl|se|com|org|jp|tk|ch|io|xyz|uk|ck|au|ru|cn\.in|co\.uk|co\.jp|fr|com\.br|be)((?!\S)|\/|:)'
+  # Placeholders for your enemy server names
+  - 'examplecraftpvpmc|godpvperstestmc'
+
+# Exclusions from the filter (own server IP, own websites, popular websites, etc).
+# The following regular expressions will be removed from the chat message prior to checking the blacklist.
+OverridingWhitelistRegEx:
+  - 'myserver\.eu|mysecondserver\.eu|mywebsite\.eu|google\..+'
+
+# The alert message that staff members will receive when a chat message triggers the filter.
+# Here you can configure the options a staff member has to punish the sender or to allow the message quickly
+# if it turns out to be a false positive. Staff permission: skychatfilter.receivealert
+AdStaffAlerter:
+  # The alert which a staff member receives (0: player, 1: chat message)
+  AlertMessage: "&7[Advert] &c{0}: {1} &3"
+  # The possible punishments (0: offender's player name, <allow> sends the chat message)
+  Punishments:
+    "[AdBanP]": "ban {0} Advertising"
+    "[AdMute1h]": "mute {0} 1h Advertising"
+    "[OK]": "<allow>"
+
+# Localized messages, configured per server
+Language:
+  English:
+    FloodTriggered: "&cYou cannot send that many messages in such a short time!"
+    TextTooSimilar: "&cYou cannot send the same message twice!"
+    NoAdvertising: "&cYou are not allowed to mention other servers or websites!"
+    ActionAlreadyPerformed: "&cAn action for this message has already been performed!"
+    NoSwearing: "&cSwearing and circumventing the filter is prohibited!"
+    AllowMessage: "Allow message"
+    MessageAllowed: "&aWe've reconsidered your message and approved it. Sorry about that!"
+    AntiCaps: "&cYour message contained too many uppercase characters and has been adjusted!"
+  German:
+    FloodTriggered: "&cDu kannst nicht so viele Nachrichten in so kurzer Zeit senden!"
+    TextTooSimilar: "&cDu kannst nicht dieselbe Nachricht nochmal senden!"
+    NoAdvertising: "&cEs ist dir nicht erlaubt andere Server oder Webseiten zu erwähnen!"
+    ActionAlreadyPerformed: "&cEs wurde für diese Nachricht bereits eine Aktion ausgeführt!"
+    NoSwearing: "&cDie Benutzung von Schimpfwörtern sowie die Umgehung des Filters ist verboten!"
+    AllowMessage: "Nachricht erlauben"
+    MessageAllowed: "&aWir haben deine Nachricht überprüft und nachträglich zugelassen. Sorry!"
+    AntiCaps: "&cDeine Nachricht enthielt zu viele Großbuchstaben und wurde angepasst!"
+  # Which servers should use which locale? Non-configured servers use the 'Default' locale
+  Servers:
+    Default: German
+    LobbyUS: English
+    SkyBlockUS: English

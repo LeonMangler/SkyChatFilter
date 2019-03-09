@@ -4,10 +4,8 @@ import de.myzelyam.skychatfilter.handlers.AntiAdvertising;
 import de.myzelyam.skychatfilter.handlers.AntiSpam;
 import de.myzelyam.skychatfilter.handlers.AntiSwear;
 import de.myzelyam.skychatfilter.handlers.CapsFilter;
-
-import eu.mrgames.mrcore.io.flatfile.FileManager;
-import eu.mrgames.mrcore.io.flatfile.PluginFile;
-import eu.mrgames.mrcore.plugin.MrCorePlugin;
+import de.myzelyam.skychatfilter.io.flatfile.FileManager;
+import de.myzelyam.skychatfilter.io.flatfile.PluginFile;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -24,10 +22,9 @@ public class SkyChatFilter extends Plugin {
 
     @Override
     public void onEnable() {
-        PluginFile<Configuration> configFile = MrCorePlugin.get().getService(FileManager.class)
+        PluginFile<Configuration> configFile = new FileManager()
                 .addBungeeFile("config", FileManager.FileType.CONFIG, this);
         config = configFile.getConfig();
-        getProxy().getPluginManager().registerListener(this, messageListener = new MessageListener(this));
 
         // reload cmd
         getProxy().getPluginManager().registerCommand(this, new Command("skychatfilter",
@@ -40,12 +37,11 @@ public class SkyChatFilter extends Plugin {
                 sender.sendMessage(ChatColor.GREEN + "Reloaded config successfully");
             }
         });
-
-        // handlers
-        getProxy().getPluginManager().registerListener(this, new CapsFilter());
+        getProxy().getPluginManager().registerListener(this, new CapsFilter(this));
         getProxy().getPluginManager().registerListener(this, new AntiSpam(this));
         getProxy().getPluginManager().registerListener(this, new AntiAdvertising(this));
         getProxy().getPluginManager().registerListener(this, antiSwear = new AntiSwear(this));
+        getProxy().getPluginManager().registerListener(this, messageListener = new MessageListener(this));
     }
 
     public Configuration getConfig() {

@@ -45,36 +45,37 @@ public abstract class StaffAlerter extends Command implements Runnable {
 
     public void alert(ProxiedPlayer sender, String text, ProxiedPlayer optionalReceiver) {
         if (!plugin.getConfig().getString(getConfigCategory() + ".AlertMessage").equals("")) {
-            if (alreadyHandledMessages.contains(text)) alreadyHandledMessages.remove(text);
+            alreadyHandledMessages.remove(text);
+            String playerInfo = optionalReceiver == null ? sender.getName() : sender.getName() + " -> "
+                    + optionalReceiver.getName();
+            String pre = ChatColor.translateAlternateColorCodes('&', plugin.getConfig()
+                    .getString(getConfigCategory() + ".AlertMessage").replace("{0}", playerInfo)
+                    .replace("{1}", text));
+            TextComponent component = new TextComponent(TextComponent.fromLegacyText(pre));
+            ComponentBuilder punishments = new ComponentBuilder("");
+            for (String punishment : plugin.getConfig().getSection(getConfigCategory() + ".Punishments")
+                    .getKeys()) {
+                String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
+                        punishment);
+                action = action.replace("{0}", sender.getName());
+                int key = constructNewMessageAction(action, optionalReceiver == null ? text
+                        : ("/msg " + optionalReceiver.getName() + " " + text), sender);
+                ClickEvent clickEvent =
+                        new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                "/skychatfilter-" + getConfigCategory().toLowerCase()
+                                        + "-allowid " + key);
+                String allowMessage = plugin.getMessage("AllowMessage", sender.getServer().getInfo());
+                HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder(action.equals("<allow>") ? allowMessage
+                                : "/" + action).color(ChatColor.AQUA).create());
+                punishments.append(punishment).color(action.equals("<allow>") ? ChatColor.GREEN
+                        : ChatColor.GOLD).event(clickEvent).event(hoverEvent).append(" ");
+            }
+            for (BaseComponent comp : punishments.create()) {
+                component.addExtra(comp);
+            }
             for (ProxiedPlayer staff : plugin.getProxy().getPlayers()) {
                 if (!staff.hasPermission("skychatfilter.receivealert")) continue;
-                String playerInfo = optionalReceiver == null ? sender.getName() : sender.getName() + " -> "
-                        + optionalReceiver.getName();
-                String pre = ChatColor.translateAlternateColorCodes('&', plugin.getConfig()
-                        .getString(getConfigCategory() + ".AlertMessage").replace("{0}", playerInfo)
-                        .replace("{1}", text));
-                TextComponent component = new TextComponent(TextComponent.fromLegacyText(pre));
-                ComponentBuilder punishments = new ComponentBuilder("");
-                for (String punishment : plugin.getConfig().getSection(getConfigCategory() + ".Punishments")
-                        .getKeys()) {
-                    String action = plugin.getConfig().getString(getConfigCategory() + ".Punishments." +
-                            punishment);
-                    action = action.replace("{0}", sender.getName());
-                    int key = constructNewMessageAction(action, optionalReceiver == null ? text
-                            : ("/msg " + optionalReceiver.getName() + " " + text), sender);
-                    ClickEvent clickEvent =
-                            new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                    "/skychatfilter-" + getConfigCategory().toLowerCase()
-                                            + "-allowid " + key);
-                    HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            new ComponentBuilder(action.equals("<allow>") ? "Nachricht erlauben"
-                                    : "/" + action).color(ChatColor.AQUA).create());
-                    punishments.append(punishment).color(action.equals("<allow>") ? ChatColor.GREEN
-                            : ChatColor.GOLD).event(clickEvent).event(hoverEvent).append(" ");
-                }
-                for (BaseComponent comp : punishments.create()) {
-                    component.addExtra(comp);
-                }
                 staff.sendMessage(component);
             }
         }
@@ -83,14 +84,16 @@ public abstract class StaffAlerter extends Command implements Runnable {
     @Override
     public void execute(CommandSender sender, String[] args) {
         if (args.length != 1 || !(sender instanceof ProxiedPlayer)) {
-            sender.sendMessage(ChatColor.RED + "Wrong args or no player");
+            sender.sendMessage(ChatColor.RED
+                    + "This command shouldnt be used manually! (failed args or player check)");
             return;
         }
         int key;
         try {
             key = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + args[0] + " is not a number");
+            sender.sendMessage(ChatColor.RED + "This command shouldnt be used manually! (" + args[0] + " is" +
+                    " not a number)");
             return;
         }
         if (!keyMessageMap.containsKey(key)) {
@@ -141,6 +144,8 @@ public abstract class StaffAlerter extends Command implements Runnable {
             alerter.alreadyHandledMessages.add(message);
             if (action.equalsIgnoreCase("<allow>")) {
                 resend();
+                sender.sendMessage(alerter.getPlugin().getMessage("MessageAllowed",
+                        sender.getServer().getInfo()));
             } else {
                 execCmd(player);
             }

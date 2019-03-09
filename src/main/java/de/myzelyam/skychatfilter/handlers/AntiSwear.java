@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class AntiSwear implements Listener {
 
@@ -27,11 +28,12 @@ public class AntiSwear implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onMessage(GeneralMessageSendEvent e) {
-        String text = e.getText().toLowerCase();
+        if (!plugin.getConfig().getStringList("EnabledModules").contains("AntiSwear"))return;
+        String text = e.getText().toLowerCase(Locale.ENGLISH);
         ProxiedPlayer p = e.getSender();
         if (p.hasPermission("skychatfilter.bypassswear") || e.isCancelled()) return;
         for (String badWord : swearWords) {
-            if (text.contains(badWord.trim().toLowerCase())) {
+            if (text.contains(badWord.toLowerCase(Locale.ENGLISH))) {
                 e.setCancelled(true);
                 p.sendMessage(plugin.getMessage("NoSwearing", p.getServer().getInfo()));
                 break;

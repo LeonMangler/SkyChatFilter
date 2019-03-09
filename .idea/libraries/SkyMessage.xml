@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="SkyMessage">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../SkyMessage/out/artifacts/SkyMessage_jar/SkyMessage.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

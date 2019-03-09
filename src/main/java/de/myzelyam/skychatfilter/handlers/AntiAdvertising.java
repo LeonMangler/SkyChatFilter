@@ -23,6 +23,7 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onMessage(GeneralMessageSendEvent e) {
+        if (!plugin.getConfig().getStringList("EnabledModules").contains("AntiAdvertising")) return;
         ProxiedPlayer p = e.getSender();
         if (p.hasPermission("skychatfilter.bypassad") || e.isCancelled()) return;
         String text = e.getText();
@@ -31,7 +32,7 @@ public class AntiAdvertising extends StaffAlerter implements Listener {
             Matcher matcher = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(text);
 
             if (matcher.find()) {
-                // remove whitelisted content and see if its still blacklisted
+                // remove whitelisted content
                 for (String regex2 : plugin.getConfig().getStringList("OverridingWhitelistRegEx")) {
                     Matcher matcher2 = Pattern.compile(regex2, Pattern.CASE_INSENSITIVE).matcher(text);
                     while (matcher2.find()) {

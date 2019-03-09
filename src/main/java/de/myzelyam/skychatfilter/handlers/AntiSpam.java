@@ -2,8 +2,7 @@ package de.myzelyam.skychatfilter.handlers;
 
 import de.myzelyam.skychatfilter.GeneralMessageSendEvent;
 import de.myzelyam.skychatfilter.SkyChatFilter;
-
-import eu.mrgames.mrcore.util.StringUtils;
+import de.myzelyam.skychatfilter.utils.StringUtils;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
@@ -13,6 +12,7 @@ import net.md_5.bungee.event.EventPriority;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,9 +34,10 @@ public class AntiSpam implements Listener, Runnable {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onMessage(GeneralMessageSendEvent e) {
+        List<String> enabledModuleNames = plugin.getConfig().getStringList("EnabledModules");
         String text = e.getText();
         ProxiedPlayer p = e.getSender();
-        if (p.hasPermission("skychatfilter.bypassspam") || e.isCancelled()) return;
+        if (e.isCancelled()) return;
 
         // check amount <=> time
         int allowedMax = ((System.currentTimeMillis() - playerLoginTimeMap.get(p.getUniqueId()))
@@ -49,19 +50,25 @@ public class AntiSpam implements Listener, Runnable {
         playerMessagesSentMap.put(p.getUniqueId(), playerMessagesSentMap.get(p.getUniqueId()) + 1);
         if (playerMessagesSentMap.get(p.getUniqueId()) >
                 (allowedMax + plugin.getConfig().getInt("FloodKickAfterXOverMax"))) {
-            p.disconnect(plugin.getMessage("AntiSpamTriggered", p.getServer().getInfo()));
+            if (p.hasPermission("skychatfilter.bypassflood")
+                    || !enabledModuleNames.contains("AntiSpam/Flood")) return;
+            p.disconnect(plugin.getMessage("FloodTriggered", p.getServer().getInfo()));
             return;
         }
         if (!playerLastMessagesMap.containsKey(p.getUniqueId())) {
             playerLastMessagesMap.put(p.getUniqueId(), new LinkedList<>());
         }
         if (playerMessagesSentMap.get(p.getUniqueId()) > allowedMax) {
+            if (p.hasPermission("skychatfilter.bypassflood")
+                    || !enabledModuleNames.contains("AntiSpam/Flood")) return;
             e.setCancelled(true);
-            p.sendMessage(plugin.getMessage("AntiSpamTriggered", p.getServer().getInfo()));
+            p.sendMessage(plugin.getMessage("FloodTriggered", p.getServer().getInfo()));
             return;
             // check similarity to last messages
         } else for (Message message : playerLastMessagesMap.get(p.getUniqueId())) {
             if (!message.isAllowed(text)) {
+                if (p.hasPermission("skychatfilter.bypassrepetition")
+                        || !enabledModuleNames.contains("AntiSpam/Repetition")) return;
                 e.setCancelled(true);
                 p.sendMessage(plugin.getMessage("TextTooSimilar", p.getServer().getInfo()));
                 break;
