@@ -117,6 +117,6 @@ Language:
     AntiCaps: "&cDeine Nachricht enthielt zu viele Großbuchstaben und wurde angepasst!"
   # Which servers should use which locale? Non-configured servers use the 'Default' locale
   Servers:
-    Default: German
-    LobbyUS: English
-    SkyBlockUS: English
+    Default: English
+    LobbyDE: German
+    SkyBlockDE: German
